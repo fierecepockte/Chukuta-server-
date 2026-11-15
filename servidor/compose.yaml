@@ -1,0 +1,31 @@
+name: ones-web
+
+services:
+  gateway:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./gateway/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  core:
+    environment:
+      REPORTES_URL: ${REPORTES_URL:-}
+      REPORTES_CREAR_URL: ${REPORTES_CREAR_URL:-}
+      ZONAS_URL: ${ZONAS_URL:-}
+    build: ./core
+    image: ones-web-core:0.1.0
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 2.0
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+networks:
+  default:
+    name: ones-web-net

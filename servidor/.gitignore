@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+secrets/
+.ssh/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+target/
+*.log
+.idea/
+.vscode/

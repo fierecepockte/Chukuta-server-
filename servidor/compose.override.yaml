@@ -1,0 +1,46 @@
+x-registros: &registros
+  driver: local
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  core:
+    environment:
+      REPORTES_URL: ${REPORTES_URL:-}
+      REPORTES_CREAR_URL: ${REPORTES_CREAR_URL:-}
+      ZONAS_URL: ${ZONAS_URL:-}
+      JWT_ISSUER: ${JWT_ISSUER:-}
+      JWT_JWKS_URI: ${JWT_JWKS_URI:-}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777"
+    pids_limit: 256
+    logging: *registros
+
+  gateway:
+    image: nginx/nginx-unprivileged:stable-alpine
+    ports: !override
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,nodev,size=256m,mode=1777"
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 64
+    logging: *registros
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
